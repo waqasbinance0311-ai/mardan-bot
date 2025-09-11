@@ -7,10 +7,13 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 # ======================
 # CONFIG
 # ======================
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # 🔥 Render me Environment Variable set karna hoga
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # 🔥 Render Environment Variables me BOT_TOKEN set karo
+
+if not BOT_TOKEN:
+    raise ValueError("❌ BOT_TOKEN not set in environment variables.")
 
 # ======================
-# SAMPLE DATASET (JSON inside code)
+# SAMPLE DATASET
 # ======================
 DATASET = {
     "9th": {
@@ -25,36 +28,6 @@ DATASET = {
                     "MCQs": ["Choose correct article: ___ apple.", "Synonym of 'brave'?", "Antonym of 'dark'?", "Past tense of 'run'?", "Preposition in 'He is fond ___ books'?"],
                     "Short": ["Define a noun.", "What is preposition?", "Difference between phrase and clause.", "What is conjunction?", "Write 5 irregular verbs."],
                     "Long": ["Essay on 'Education'.", "Letter to principal for fee concession.", "Application for character certificate.", "Story: Greedy Dog.", "Essay on 'My School'."]
-                }
-            }
-        },
-        "computer": {
-            "old_papers": {
-                "2022": {
-                    "MCQs": ["CPU stands for?", "Which is input device? (a) Mouse (b) Printer", "Binary of 5 is?", "Which is system software?", "What is algorithm?"],
-                    "Short": ["Define RAM.", "Differentiate hardware & software.", "What is a compiler?", "Define LAN.", "What is a flowchart?"],
-                    "Long": ["Explain generations of computer.", "Describe MS Word features.", "Explain internet advantages.", "Discuss uses of computer in education.", "Explain programming languages."]
-                },
-                "2021": {
-                    "MCQs": ["RAM stands for?", "Which is output device? (a) Monitor (b) Keyboard", "Binary of 10?", "MS Word is? (a) OS (b) App Software", "What is database?"],
-                    "Short": ["Define ROM.", "What is operating system?", "Explain modem.", "What is network?", "What is software engineering?"],
-                    "Long": ["Explain parts of computer system.", "Describe MS Excel uses.", "Explain computer in business.", "Discuss types of networks.", "Explain software development life cycle."]
-                }
-            }
-        }
-    },
-    "10th": {
-        "english": {
-            "old_papers": {
-                "2022": {
-                    "MCQs": ["Synonym of 'happy'?", "Antonym of 'rich'?", "Correct tense: He ___ playing.", "Plural of 'tooth'?", "Meaning of 'generous'?"],
-                    "Short": ["Define pronoun.", "What is subject?", "Write 5 irregular verbs.", "What is adverb?", "What is passive voice?"],
-                    "Long": ["Essay on 'Patriotism'.", "Letter to friend about hobby.", "Application for urgent leave.", "Story: Lion and Mouse.", "Essay on 'Science and Technology'."]
-                },
-                "2021": {
-                    "MCQs": ["Choose correct article: ___ umbrella.", "Synonym of 'wise'?", "Antonym of 'kind'?", "Past tense of 'eat'?", "Preposition in 'He is afraid ___ snakes'?"],
-                    "Short": ["Define adjective.", "What is object?", "What is conjunction?", "Difference between phrase and clause.", "Write forms of 'Come'."],
-                    "Long": ["Essay on 'Health'.", "Letter to principal for leave.", "Application for new books.", "Story: Hare and Tortoise.", "Essay on 'Computer'."]
                 }
             }
         }
@@ -88,7 +61,6 @@ def generate_paper(data, output_file, mode="new"):
             all_short.extend(sections.get("Short", []))
             all_long.extend(sections.get("Long", []))
 
-        # MCQs
         pdf.set_font("Arial", "B", 14)
         pdf.cell(0, 10, "Section A: MCQs", ln=True)
         pdf.set_font("Arial", "", 12)
@@ -96,7 +68,6 @@ def generate_paper(data, output_file, mode="new"):
             pdf.multi_cell(0, 10, f"Q{i}. {q}")
         pdf.ln(5)
 
-        # Short
         pdf.set_font("Arial", "B", 14)
         pdf.cell(0, 10, "Section B: Short Questions", ln=True)
         pdf.set_font("Arial", "", 12)
@@ -104,7 +75,6 @@ def generate_paper(data, output_file, mode="new"):
             pdf.multi_cell(0, 10, f"Q{i}. {q}")
         pdf.ln(5)
 
-        # Long
         pdf.set_font("Arial", "B", 14)
         pdf.cell(0, 10, "Section C: Long Questions", ln=True)
         pdf.set_font("Arial", "", 12)
@@ -120,17 +90,16 @@ def generate_paper(data, output_file, mode="new"):
 # ======================
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
-        "📘 *Welcome to Mardan Board Papers Bot!*\n\n"
-        "Use commands:\n"
-        "➡️ `/collect <class> <subject>` (Old Papers)\n"
-        "➡️ `/generate <class> <subject>` (New Paper)\n\n"
-        "⚡ Example: `/collect 9th english` or `/generate 10th computer`",
-        parse_mode="Markdown"
+        "📘 Welcome to *Mardan Board Papers Bot*!\n\n"
+        "Commands:\n"
+        "➡️ /collect <class> <subject>\n"
+        "➡️ /generate <class> <subject>\n"
+        "Example: `/collect 9th english` or `/generate 9th english`"
     )
 
 async def collect_cmd(update: Update, context: CallbackContext):
     if len(context.args) < 2:
-        await update.message.reply_text("⚠ Example: `/collect 9th english`", parse_mode="Markdown")
+        await update.message.reply_text("⚠️ Example: `/collect 9th english`")
         return
     class_name, subject = context.args[0], context.args[1]
     data = DATASET.get(class_name, {}).get(subject)
@@ -139,13 +108,12 @@ async def collect_cmd(update: Update, context: CallbackContext):
         return
     output_pdf = f"{class_name}_{subject}_old.pdf"
     generate_paper(data, output_pdf, mode="old")
-    with open(output_pdf, "rb") as f:
-        await update.message.reply_document(f)
-    await update.message.reply_text("✅ Old papers collected successfully!")
+    await update.message.reply_document(open(output_pdf, "rb"))
+    await update.message.reply_text("✅ Here are old papers.")
 
 async def generate_cmd(update: Update, context: CallbackContext):
     if len(context.args) < 2:
-        await update.message.reply_text("⚠ Example: `/generate 9th english`", parse_mode="Markdown")
+        await update.message.reply_text("⚠️ Example: `/generate 9th english`")
         return
     class_name, subject = context.args[0], context.args[1]
     data = DATASET.get(class_name, {}).get(subject)
@@ -154,24 +122,19 @@ async def generate_cmd(update: Update, context: CallbackContext):
         return
     output_pdf = f"{class_name}_{subject}_new.pdf"
     generate_paper(data, output_pdf, mode="new")
-    with open(output_pdf, "rb") as f:
-        await update.message.reply_document(f)
-    await update.message.reply_text("✅ New paper generated successfully 📄")
+    await update.message.reply_document(open(output_pdf, "rb"))
+    await update.message.reply_text("✅ Here is your generated paper 📄")
 
 # ======================
 # MAIN
 # ======================
 def main():
-    if not BOT_TOKEN:
-        print("❌ BOT_TOKEN not set in environment variables.")
-        return
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("collect", collect_cmd))
     app.add_handler(CommandHandler("generate", generate_cmd))
-    print("✅ Bot is running...")
+    print("✅ Bot running...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
-
