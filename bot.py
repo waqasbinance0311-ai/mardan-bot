@@ -7,13 +7,13 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 # ======================
 # CONFIG
 # ======================
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # 🔥 Render Environment Variables me BOT_TOKEN set karo
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # 🔥 Render me BOT_TOKEN Environment Variable set karo
 
 if not BOT_TOKEN:
     raise ValueError("❌ BOT_TOKEN not set in environment variables.")
 
 # ======================
-# SAMPLE DATASET
+# DATASET (9th–12th, 5 Subjects, 5 Years)
 # ======================
 DATASET = {
     "9th": {
@@ -28,6 +28,73 @@ DATASET = {
                     "MCQs": ["Choose correct article: ___ apple.", "Synonym of 'brave'?", "Antonym of 'dark'?", "Past tense of 'run'?", "Preposition in 'He is fond ___ books'?"],
                     "Short": ["Define a noun.", "What is preposition?", "Difference between phrase and clause.", "What is conjunction?", "Write 5 irregular verbs."],
                     "Long": ["Essay on 'Education'.", "Letter to principal for fee concession.", "Application for character certificate.", "Story: Greedy Dog.", "Essay on 'My School'."]
+                },
+                "2020": {
+                    "MCQs": ["Antonym of 'strong'?", "Synonym of 'fast'?", "What is pronoun?", "Past tense of 'eat'?", "Preposition in 'He lives ___ Lahore'."],
+                    "Short": ["Define interjection.", "What is subject and predicate?", "Write 5 collective nouns.", "What is article?", "Explain present continuous tense."],
+                    "Long": ["Essay on 'My Best Friend'.", "Letter to your father for money.", "Application for leave in advance.", "Story: Hare and Tortoise.", "Essay on 'Village Life'."]
+                },
+                "2019": {
+                    "MCQs": ["Synonym of 'sad'?", "Antonym of 'poor'?", "What is adverb?", "Future tense of 'go'?", "Plural of 'man'?"],
+                    "Short": ["Define clause.", "What is an idiom?", "Difference between active and passive voice.", "What is article?", "Write 5 modal verbs."],
+                    "Long": ["Essay on 'My Hobby'.", "Letter to friend for invitation.", "Application for urgent work leave.", "Story: King and Spider.", "Essay on 'Sports'."]
+                },
+                "2018": {
+                    "MCQs": ["Synonym of 'angry'?", "Antonym of 'rich'?", "What is conjunction?", "Past participle of 'write'?", "Meaning of 'courage'?"],
+                    "Short": ["Define adverb.", "What is direct and indirect speech?", "Difference between phrase and idiom.", "What is preposition?", "Define tense."],
+                    "Long": ["Essay on 'My School'.", "Letter to cousin for Eid.", "Application for readmission.", "Story: Thirsty Crow.", "Essay on 'Examination'."]
+                }
+            }
+        },
+        "computer": {
+            "old_papers": {
+                "2022": {
+                    "MCQs": ["Binary of 8?", "Shortcut of Copy?", "Primary unit of computer?", "Who is father of computer?", "What is ALU?"],
+                    "Short": ["Define RAM.", "Define ROM.", "What is MS Word?", "Explain Internet.", "What is Database?"],
+                    "Long": ["Essay on 'Use of Computer in Education'.", "Write an application in C language.", "Explain parts of computer.", "Importance of Networking.", "Role of IT in modern world."]
+                },
+                "2021": {
+                    "MCQs": ["Binary of 16?", "Shortcut of Paste?", "What is CPU?", "Full form of LAN?", "What is Software?"],
+                    "Short": ["Define Hardware.", "Difference between input and output device.", "What is MS Excel?", "What is WWW?", "What is Algorithm?"],
+                    "Long": ["Explain Operating System.", "Write program for sum of 2 numbers.", "Explain uses of MS PowerPoint.", "Essay: Internet Advantages.", "Role of Computer in Health."]
+                }
+            }
+        }
+    },
+    "10th": {
+        "math": {
+            "old_papers": {
+                "2022": {
+                    "MCQs": ["Solve: 2+3*4?", "sin90°?", "Derivative of x^2?", "Log10(100)?", "Value of π?"],
+                    "Short": ["Define Polynomial.", "What is Matrix?", "Find HCF of 24 and 36.", "Define Circle.", "Find roots of x^2-4=0."],
+                    "Long": ["Solve Quadratic Equation.", "Explain Trigonometric ratios.", "Solve simultaneous equations.", "Essay on importance of Math.", "Problem of Geometry."]
+                },
+                "2021": {
+                    "MCQs": ["cos0°?", "sin0°?", "Factorize x^2+5x+6.", "Solve log(1).", "Area of square?"],
+                    "Short": ["Define Linear Equation.", "Find LCM of 15,20.", "What is Statistics?", "Define Angle.", "Difference between Radius and Diameter."],
+                    "Long": ["Solve 2x+3=7.", "Explain probability with example.", "Construct triangle ABC.", "Essay on 'Math in daily life'.", "Algebra problem."]
+                }
+            }
+        }
+    },
+    "11th": {
+        "physics": {
+            "old_papers": {
+                "2022": {
+                    "MCQs": ["Unit of Force?", "Speed formula?", "Newton’s 1st Law?", "Unit of Energy?", "Speed of light?"],
+                    "Short": ["Define Acceleration.", "What is Work?", "What is Power?", "State Newton's 2nd law.", "Define Scalar."],
+                    "Long": ["Explain Motion.", "Derive equation of Force.", "Essay on Energy conservation.", "Simple harmonic motion.", "Gravitation law."]
+                }
+            }
+        }
+    },
+    "12th": {
+        "chemistry": {
+            "old_papers": {
+                "2022": {
+                    "MCQs": ["Atomic number of Oxygen?", "Symbol of Sodium?", "H2O formula?", "Molar mass of CO2?", "Valency of Carbon?"],
+                    "Short": ["Define Acid.", "Define Base.", "Law of conservation of mass.", "What is Isotope?", "Define Chemical Reaction."],
+                    "Long": ["Essay on Chemistry role in daily life.", "Explain Organic Chemistry.", "Derive Gas laws.", "Importance of Chemistry.", "Write on Environmental Chemistry."]
                 }
             }
         }
@@ -94,7 +161,7 @@ async def start(update: Update, context: CallbackContext):
         "Commands:\n"
         "➡️ /collect <class> <subject>\n"
         "➡️ /generate <class> <subject>\n"
-        "Example: `/collect 9th english` or `/generate 9th english`"
+        "Example: `/collect 9th english` or `/generate 10th math`"
     )
 
 async def collect_cmd(update: Update, context: CallbackContext):
