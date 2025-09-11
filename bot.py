@@ -7,7 +7,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 # ======================
 # CONFIG
 # ======================
-BOT_TOKEN = os.getenv("8023108538:AAE51wAdhjHSv6TQOYBBe7RS0jIrOTRoOcs")  # 🔥 Render me Environment Variable set karna hoga
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # 🔥 Render me Environment Variable set karna hoga
 
 # ======================
 # SAMPLE DATASET (JSON inside code)
