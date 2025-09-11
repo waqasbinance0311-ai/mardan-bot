@@ -7,7 +7,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext
 # ======================
 # CONFIG
 # ======================
-BOT_TOKEN = "8023108538:AAE51wAdhjHSv6TQOYBBe7RS0jIrOTRoOcs"
+BOT_TOKEN = os.getenv("BOT_TOKEN")  # 🔥 Render me Environment Variable set karna hoga
 
 # ======================
 # SAMPLE DATASET (JSON inside code)
@@ -58,28 +58,6 @@ DATASET = {
                 }
             }
         }
-    },
-    "11th": {
-        "english": {
-            "old_papers": {
-                "2022": {
-                    "MCQs": ["Author of 'The Old Man and the Sea'?", "Meaning of 'Prose'?", "Synonym of 'brave'?", "Antonym of 'weak'?", "What is sonnet?"],
-                    "Short": ["Define essay.", "What is a stanza?", "Explain irony.", "What is simile?", "Difference between poetry and prose."],
-                    "Long": ["Essay on 'Youth and Nation'.", "Letter to editor on pollution.", "Application for library card.", "Story: Honesty always pays.", "Essay on 'Role of Media'."]
-                }
-            }
-        }
-    },
-    "12th": {
-        "english": {
-            "old_papers": {
-                "2022": {
-                    "MCQs": ["Author of 'Hamlet'?", "Meaning of 'Metaphor'?", "Synonym of 'kind'?", "Antonym of 'slow'?", "What is drama?"],
-                    "Short": ["Define drama.", "What is theme?", "Explain imagery.", "What is alliteration?", "Difference between comedy and tragedy."],
-                    "Long": ["Essay on 'Democracy'.", "Letter to editor on exams.", "Application for rechecking papers.", "Story: Union is strength.", "Essay on 'Future of AI'."]
-                }
-            }
-        }
     }
 }
 
@@ -110,6 +88,7 @@ def generate_paper(data, output_file, mode="new"):
             all_short.extend(sections.get("Short", []))
             all_long.extend(sections.get("Long", []))
 
+        # MCQs
         pdf.set_font("Arial", "B", 14)
         pdf.cell(0, 10, "Section A: MCQs", ln=True)
         pdf.set_font("Arial", "", 12)
@@ -117,6 +96,7 @@ def generate_paper(data, output_file, mode="new"):
             pdf.multi_cell(0, 10, f"Q{i}. {q}")
         pdf.ln(5)
 
+        # Short
         pdf.set_font("Arial", "B", 14)
         pdf.cell(0, 10, "Section B: Short Questions", ln=True)
         pdf.set_font("Arial", "", 12)
@@ -124,6 +104,7 @@ def generate_paper(data, output_file, mode="new"):
             pdf.multi_cell(0, 10, f"Q{i}. {q}")
         pdf.ln(5)
 
+        # Long
         pdf.set_font("Arial", "B", 14)
         pdf.cell(0, 10, "Section C: Long Questions", ln=True)
         pdf.set_font("Arial", "", 12)
@@ -139,16 +120,17 @@ def generate_paper(data, output_file, mode="new"):
 # ======================
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
-        "📘 Welcome to *Mardan Board Papers Bot*!\n\n"
-        "Commands:\n"
-        "➡️ /collect <class> <subject>\n"
-        "➡️ /generate <class> <subject>\n"
-        "Example: `/collect 9th english` or `/generate 10th computer`"
+        "📘 *Welcome to Mardan Board Papers Bot!*\n\n"
+        "Use commands:\n"
+        "➡️ `/collect <class> <subject>` (Old Papers)\n"
+        "➡️ `/generate <class> <subject>` (New Paper)\n\n"
+        "⚡ Example: `/collect 9th english` or `/generate 10th computer`",
+        parse_mode="Markdown"
     )
 
 async def collect_cmd(update: Update, context: CallbackContext):
     if len(context.args) < 2:
-        await update.message.reply_text("⚠️ Example: `/collect 9th english`")
+        await update.message.reply_text("⚠ Example: `/collect 9th english`", parse_mode="Markdown")
         return
     class_name, subject = context.args[0], context.args[1]
     data = DATASET.get(class_name, {}).get(subject)
@@ -157,12 +139,13 @@ async def collect_cmd(update: Update, context: CallbackContext):
         return
     output_pdf = f"{class_name}_{subject}_old.pdf"
     generate_paper(data, output_pdf, mode="old")
-    await update.message.reply_document(open(output_pdf, "rb"))
-    await update.message.reply_text("✅ Here are old papers.")
+    with open(output_pdf, "rb") as f:
+        await update.message.reply_document(f)
+    await update.message.reply_text("✅ Old papers collected successfully!")
 
 async def generate_cmd(update: Update, context: CallbackContext):
     if len(context.args) < 2:
-        await update.message.reply_text("⚠️ Example: `/generate 9th english`")
+        await update.message.reply_text("⚠ Example: `/generate 9th english`", parse_mode="Markdown")
         return
     class_name, subject = context.args[0], context.args[1]
     data = DATASET.get(class_name, {}).get(subject)
@@ -171,19 +154,24 @@ async def generate_cmd(update: Update, context: CallbackContext):
         return
     output_pdf = f"{class_name}_{subject}_new.pdf"
     generate_paper(data, output_pdf, mode="new")
-    await update.message.reply_document(open(output_pdf, "rb"))
-    await update.message.reply_text("✅ Here is your generated paper 📄")
+    with open(output_pdf, "rb") as f:
+        await update.message.reply_document(f)
+    await update.message.reply_text("✅ New paper generated successfully 📄")
 
 # ======================
 # MAIN
 # ======================
 def main():
+    if not BOT_TOKEN:
+        print("❌ BOT_TOKEN not set in environment variables.")
+        return
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("collect", collect_cmd))
     app.add_handler(CommandHandler("generate", generate_cmd))
-    print("✅ Bot running...")
+    print("✅ Bot is running...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
+
