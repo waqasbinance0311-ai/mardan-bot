@@ -1,9 +1,17 @@
+import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext
 
-BOT_TOKEN = "YOUR_BOT_TOKEN"  # 🔥 apna token yaha daalna
+# ======================
+# BOT TOKEN (Env se lo)
+# ======================
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not BOT_TOKEN:
+    raise ValueError("❌ BOT_TOKEN not set in environment variables.")
 
-# Subject Slugs for URL
+# ======================
+# SUBJECT SLUGS
+# ======================
 SUBJECT_MAP = {
     "english": "english",
     "urdu": "urdu",
@@ -40,7 +48,8 @@ async def start(update: Update, context: CallbackContext):
 async def class_handler(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
-    selected_class = query.data.split("_")[1]
+    selected_class = query.data.replace("class_", "")  # e.g. "9th"
+
     context.user_data["class"] = selected_class
 
     keyboard = [
@@ -64,7 +73,8 @@ async def class_handler(update: Update, context: CallbackContext):
 async def subject_handler(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
-    selected_subject = query.data.split("_")[1]
+    selected_subject = query.data.replace("sub_", "")
+
     context.user_data["subject"] = selected_subject
 
     keyboard = [
@@ -86,21 +96,25 @@ async def action_handler(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
 
-    action = query.data.split("_")[1]  # collect / generate
-    class_name = context.user_data.get("class")
-    subject = context.user_data.get("subject")
+    action = query.data.replace("action_", "")
+    class_name = context.user_data.get("class")   # e.g. "9th"
+    subject = context.user_data.get("subject")    # e.g. "english"
+
+    if not class_name or not subject:
+        await query.edit_message_text("⚠️ Please start again using /start")
+        return
 
     if action == "collect":
         subject_slug = SUBJECT_MAP.get(subject, subject)
         url = f"https://www.ilmkidunya.com/past_papers/mardan-board-{class_name}-class-{subject_slug}-past-papers.aspx"
 
         await query.edit_message_text(
-            text=f"📂 Here are the past papers for *{class_name.capitalize()} Class – {subject.title()} (2020–2025)*:\n\n🔗 [Click here to view papers]({url})",
+            text=f"📂 Here are the past papers for *{class_name} Class – {subject.title()} (2020–2025)*:\n\n🔗 [Click here to view papers]({url})",
             parse_mode="Markdown"
         )
     else:
         await query.edit_message_text(
-            text=f"📝 Generating a new paper for *{class_name.capitalize()} Class – {subject.title()}*...\n\n⚡ Paper coming soon!"
+            text=f"📝 Generating a new paper for *{class_name} Class – {subject.title()}*...\n\n⚡ Paper coming soon!"
         )
 
 # ======================
