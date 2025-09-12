@@ -1,4 +1,5 @@
 import os
+import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext
 
@@ -10,7 +11,7 @@ if not BOT_TOKEN:
     raise ValueError("❌ BOT_TOKEN not set in environment variables.")
 
 # ======================
-# SUBJECT SLUGS
+# SUBJECT SLUGS (links ke liye)
 # ======================
 SUBJECT_MAP = {
     "english": "english",
@@ -18,6 +19,112 @@ SUBJECT_MAP = {
     "math": "mathematics",
     "computer": "computer-science",
     "biology": "biology"
+}
+
+# ======================
+# SAMPLE QUESTIONS (New Paper Generator)
+# ======================
+QUESTION_BANK = {
+    "english": {
+        "mcqs": [
+            "He ____ to school daily. (go/goes)",
+            "Synonym of *Happy*?",
+            "Antonym of *Brave*?",
+            "Correct passive: 'Ali writes a letter.'",
+            "Choose the correct spelling: (Enviroment/Environment)"
+        ],
+        "short": [
+            "Define a noun with examples.",
+            "What is a pronoun?",
+            "Difference between Active & Passive voice?",
+            "Write 5 sentences using Present Perfect Tense.",
+            "What is a Paragraph? Write an example."
+        ],
+        "long": [
+            "Write an essay on 'My Country'.",
+            "Translate the following passage into English."
+        ]
+    },
+    "urdu": {
+        "mcqs": [
+            "لفظ 'کتاب' کس صنف سے تعلق رکھتا ہے؟",
+            "'خوبصورت' کا مترادف کیا ہے؟",
+            "جملہ مکمل کریں: وہ اسکول ___ ہے۔",
+            "'دوستی' پر صحیح محاورہ منتخب کریں۔",
+            "'محبت' کا متضاد کیا ہے؟"
+        ],
+        "short": [
+            "سبق 'قوم کی ترقی' کا خلاصہ لکھیں۔",
+            "محاورہ کی تعریف کریں۔",
+            "قائداعظم پر چند جملے لکھیں۔",
+            "شاعر کے بارے میں لکھیں۔",
+            "سبق 'ہمت اور حوصلہ' کے نکات لکھیں۔"
+        ],
+        "long": [
+            "یادداشت پر مضمون لکھیں۔",
+            "پاکستان پر ایک تقریر تحریر کریں۔"
+        ]
+    },
+    "math": {
+        "mcqs": [
+            "2 + 2 × 2 = ?",
+            "Square root of 144?",
+            "Derivative of x²?",
+            "Value of π?",
+            "Solve: 5x = 20"
+        ],
+        "short": [
+            "Simplify: (x+2)(x+3)",
+            "Find LCM of 12 and 18.",
+            "Solve: 2x+5=15",
+            "Define prime numbers with examples.",
+            "Factorize: x² - 9"
+        ],
+        "long": [
+            "Solve quadratic equation: x²+5x+6=0",
+            "Draw a graph of y=2x+3"
+        ]
+    },
+    "computer": {
+        "mcqs": [
+            "CPU stands for?",
+            "1 KB = ? bytes",
+            "Who is the father of Computer?",
+            "Shortcut of Copy in Windows?",
+            "Binary of 5?"
+        ],
+        "short": [
+            "Define Software.",
+            "Difference between RAM & ROM.",
+            "What is Algorithm?",
+            "Write 2 advantages of Internet.",
+            "Define Operating System."
+        ],
+        "long": [
+            "Explain generations of computers.",
+            "Write a note on MS Word."
+        ]
+    },
+    "biology": {
+        "mcqs": [
+            "Unit of life is?",
+            "Photosynthesis occurs in?",
+            "Which organ pumps blood?",
+            "DNA stands for?",
+            "Name the largest bone in human body."
+        ],
+        "short": [
+            "Define Cell Theory.",
+            "Difference between Mitosis & Meiosis.",
+            "What is Chlorophyll?",
+            "Define respiration.",
+            "What is tissue?"
+        ],
+        "long": [
+            "Explain Digestive System in detail.",
+            "Write a note on Human Heart."
+        ]
+    }
 }
 
 # ======================
@@ -106,16 +213,24 @@ async def action_handler(update: Update, context: CallbackContext):
 
     if action == "collect":
         subject_slug = SUBJECT_MAP.get(subject, subject)
-        url = f"https://www.ilmkidunya.com/past_papers/mardan-board-{class_name}-class-{subject_slug}-past-papers.aspx"
+        url = f"https://www.ilmkidunya.com/past-papers/mardan-board-{class_name}-class-{subject_slug}-past-papers.aspx"
 
         await query.edit_message_text(
             text=f"📂 Here are the past papers for *{class_name} Class – {subject.title()} (2020–2025)*:\n\n🔗 [Click here to view papers]({url})",
             parse_mode="Markdown"
         )
     else:
-        await query.edit_message_text(
-            text=f"📝 Generating a new paper for *{class_name} Class – {subject.title()}*...\n\n⚡ Paper coming soon!"
-        )
+        qdata = QUESTION_BANK.get(subject, {})
+        mcqs = random.sample(qdata.get("mcqs", []), min(5, len(qdata.get("mcqs", []))))
+        shorts = random.sample(qdata.get("short", []), min(5, len(qdata.get("short", []))))
+        longs = random.sample(qdata.get("long", []), min(2, len(qdata.get("long", []))))
+
+        paper_text = f"📝 *Generated Paper – {class_name} Class ({subject.title()})*\n\n"
+        paper_text += "📌 *MCQs:*\n" + "\n".join([f"{i+1}. {q}" for i, q in enumerate(mcqs)]) + "\n\n"
+        paper_text += "✏️ *Short Questions:*\n" + "\n".join([f"{i+1}. {q}" for i, q in enumerate(shorts)]) + "\n\n"
+        paper_text += "📖 *Long Questions:*\n" + "\n".join([f"{i+1}. {q}" for i, q in enumerate(longs)])
+
+        await query.edit_message_text(paper_text, parse_mode="Markdown")
 
 # ======================
 # MAIN
