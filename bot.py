@@ -4,11 +4,10 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, CallbackContext
 
 # ======================
-# BOT TOKEN (Env se lo)
+# BOT TOKEN & CHAT ID (Direct Code Me)
 # ======================
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-if not BOT_TOKEN:
-    raise ValueError("❌ BOT_TOKEN not set in environment variables.")
+BOT_TOKEN = "8023108538:AAE51wAdhjHSv6TQOYBBe7RS0jIrOTRoOcs"
+CHAT_ID = "5969642968"
 
 # ======================
 # SUBJECT SLUGS (links ke liye)
@@ -155,7 +154,7 @@ async def start(update: Update, context: CallbackContext):
 async def class_handler(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
-    selected_class = query.data.replace("class_", "")  # e.g. "9th"
+    selected_class = query.data.replace("class_", "")
 
     context.user_data["class"] = selected_class
 
@@ -204,8 +203,8 @@ async def action_handler(update: Update, context: CallbackContext):
     await query.answer()
 
     action = query.data.replace("action_", "")
-    class_name = context.user_data.get("class")   # e.g. "9th"
-    subject = context.user_data.get("subject")    # e.g. "english"
+    class_name = context.user_data.get("class")
+    subject = context.user_data.get("subject")
 
     if not class_name or not subject:
         await query.edit_message_text("⚠️ Please start again using /start")
