@@ -16,7 +16,7 @@ from telegram.ext import (
     Application,
     CommandHandler,
     CallbackQueryHandler,
-    CallbackContext
+    ContextTypes
 )
 
 # ================== CONFIG ==================
@@ -63,7 +63,7 @@ PAST_PAPER_URLS = {
 FALLBACK_URL = "https://www.ilmkidunya.com/past_papers/mardan-board-past-papers.aspx"
 
 # ---------------- COMMAND HANDLERS ----------------
-async def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("9th Class", callback_data="class_9th")],
         [InlineKeyboardButton("10th Class", callback_data="class_10th")],
@@ -79,7 +79,7 @@ async def start(update: Update, context: CallbackContext):
     )
 
 
-async def class_handler(update: Update, context: CallbackContext):
+async def class_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     class_name = query.data.replace("class_", "")
@@ -99,7 +99,7 @@ async def class_handler(update: Update, context: CallbackContext):
     )
 
 
-async def subject_handler(update: Update, context: CallbackContext):
+async def subject_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     subject = query.data.replace("subject_", "")
@@ -116,7 +116,7 @@ async def subject_handler(update: Update, context: CallbackContext):
     )
 
 
-async def action_handler(update: Update, context: CallbackContext):
+async def action_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     action = query.data.replace("action_", "")
@@ -135,37 +135,28 @@ async def action_handler(update: Update, context: CallbackContext):
             f"🎯 *Board:* Mardan Board\n"
             f"📚 *Subject:* {subject.title()}"
         )
-        keyboard = [
-            [InlineKeyboardButton("🔙 Back to Menu", callback_data="back_to_start")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            text=message_text,
-            reply_markup=reply_markup,
-            parse_mode="Markdown",
-            disable_web_page_preview=False,
-        )
-
-    elif action == "generate":
+    else:
         message_text = (
             f"📝 *Random Generated Paper*\n\n"
             f"📘 Class: {class_name}\n"
             f"📚 Subject: {subject.title()}\n"
             f"⚡ Note: This is an auto-generated practice paper."
         )
-        keyboard = [
-            [InlineKeyboardButton("🔙 Back to Menu", callback_data="back_to_start")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            text=message_text, reply_markup=reply_markup, parse_mode="Markdown"
-        )
+
+    keyboard = [[InlineKeyboardButton("🔙 Back to Menu", callback_data="back_to_start")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(
+        text=message_text,
+        reply_markup=reply_markup,
+        parse_mode="Markdown",
+        disable_web_page_preview=False,
+    )
 
 
-async def back_to_start(update: Update, context: CallbackContext):
+async def back_to_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await start(query, context)
+    await start(update, context)
 
 
 # ---------------- MAIN ----------------
