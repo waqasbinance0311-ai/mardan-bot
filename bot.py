@@ -7,22 +7,13 @@ Deploy-ready (Render/Heroku etc.)
 
 import os
 import logging
-from telegram import (
-    Update,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup
-)
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    CallbackQueryHandler,
-    ContextTypes
-)
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # ================== CONFIG ==================
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "PUT_YOUR_TOKEN_HERE")
 
-# Logging
+# Logging setup
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
@@ -71,14 +62,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("11th Class", callback_data="class_11th")],
         [InlineKeyboardButton("12th Class", callback_data="class_12th")],
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
         "📚 *Welcome to Mardan Board Past Papers Bot*\n\n"
         "Select your class to continue:",
         parse_mode="Markdown",
-        reply_markup=reply_markup,
+        reply_markup=InlineKeyboardMarkup(keyboard),
     )
-
 
 async def class_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -92,13 +81,11 @@ async def class_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("Computer", callback_data="subject_computer")],
         [InlineKeyboardButton("Biology", callback_data="subject_biology")],
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
     await query.edit_message_text(
         text=f"✅ You selected *{class_name} Class*.\n\nNow choose your subject:",
         parse_mode="Markdown",
-        reply_markup=reply_markup,
+        reply_markup=InlineKeyboardMarkup(keyboard),
     )
-
 
 async def subject_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -109,13 +96,11 @@ async def subject_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("📂 Collect Past Papers", callback_data="action_collect")],
         [InlineKeyboardButton("📝 Generate Random Paper", callback_data="action_generate")],
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
     await query.edit_message_text(
         text=f"📘 Subject selected: *{subject.title()}*\n\nChoose an option:",
         parse_mode="Markdown",
-        reply_markup=reply_markup,
+        reply_markup=InlineKeyboardMarkup(keyboard),
     )
-
 
 async def action_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -123,13 +108,14 @@ async def action_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     action = query.data.replace("action_", "")
     class_name = context.user_data.get("class")
     subject = context.user_data.get("subject")
+
     if not class_name or not subject:
         await query.edit_message_text("⚠ Please start again using /start")
         return
 
     if action == "collect":
         url = PAST_PAPER_URLS.get(class_name, {}).get(subject, FALLBACK_URL)
-        message_text = (
+        text = (
             f"📂 *Past Papers for {class_name} Class - {subject.title()}*\n\n"
             f"🔗 [Click here to view and download past papers]({url})\n\n"
             f"📝 *Available Papers:* 2004-2025\n"
@@ -137,28 +123,25 @@ async def action_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📚 *Subject:* {subject.title()}"
         )
     else:
-        message_text = (
+        text = (
             f"📝 *Random Generated Paper*\n\n"
             f"📘 Class: {class_name}\n"
             f"📚 Subject: {subject.title()}\n"
             f"⚡ Note: This is an auto-generated practice paper."
         )
 
-    keyboard = [[InlineKeyboardButton("🔙 Back to Menu", callback_data="back_to_start")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    back_keyboard = [[InlineKeyboardButton("🔙 Back to Menu", callback_data="back_to_start")]]
     await query.edit_message_text(
-        text=message_text,
-        reply_markup=reply_markup,
+        text=text,
         parse_mode="Markdown",
+        reply_markup=InlineKeyboardMarkup(back_keyboard),
         disable_web_page_preview=False,
     )
-
 
 async def back_to_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     await start(update, context)
-
 
 # ---------------- MAIN ----------------
 def main():
@@ -170,9 +153,8 @@ def main():
     app.add_handler(CallbackQueryHandler(action_handler, pattern="^action_"))
     app.add_handler(CallbackQueryHandler(back_to_start, pattern="^back_to_start$"))
 
-    logger.info("Bot started...")
+    logger.info("Bot started successfully 🚀")
     app.run_polling()
-
 
 if __name__ == "__main__":
     main()
